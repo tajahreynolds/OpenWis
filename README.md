@@ -52,3 +52,4 @@ repo.
 - [docs/HUMAN_TASKS.md](docs/HUMAN_TASKS.md) — human-only task registry
 - [docs/DECISIONS.md](docs/DECISIONS.md) — decision log
 - [docs/POLIS_SANDBOX.md](docs/POLIS_SANDBOX.md) — local Pol.is for testing the integration
+- [docs/NARRAFIRMA_IMPORT.md](docs/NARRAFIRMA_IMPORT.md) — importing Pol.is statements into NarraFirma

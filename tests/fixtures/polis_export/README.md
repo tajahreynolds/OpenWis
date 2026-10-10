@@ -4,9 +4,17 @@ Real export files (`polis-export/1`) produced by Pol.is from **synthetic data
 only**, used by `tests/test_export_and_transform.py`.
 
 - `clustered/`: after Pol.is math has run (two opinion groups).
+- `messy/`: **hand-made, not Pol.is output**, for `storybridge` tests. Same
+  `format.json`; `comments.csv` rows out of ID order with multi-line text,
+  quotes, non-ASCII, a leading `;`, a formula-like `=`, a control character,
+  a blank statement, a rejected statement, a non-integer `author-id` and a
+  bad timestamp; `summary.csv` topic contains `|`, quotes and a comma.
 - `no_math/`: votes cast but math not yet run: `comment-groups.csv` has a
   header only and every `group-id` is empty. Three synthetic participants
   (`synthetic-x-<n>`) cast 6 votes on statements 0-2.
+
+`summary.csv` in `clustered/` and `no_math/` is Pol.is output too (no final
+newline, `url` shows `undefined://` because no proxy set the protocol).
 
 ## `clustered/`
 
