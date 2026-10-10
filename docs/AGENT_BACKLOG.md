@@ -1,4 +1,4 @@
-﻿# Agent Backlog
+# Agent Backlog
 
 
 Structured tasks for AI agents. Each has acceptance criteria.

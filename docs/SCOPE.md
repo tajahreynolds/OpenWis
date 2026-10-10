@@ -1,4 +1,4 @@
-﻿# Scope
+# Scope
 
 
 ## What This Project Is

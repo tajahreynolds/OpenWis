@@ -1,4 +1,4 @@
-﻿# Decision Log
+# Decision Log
 
 
 Every non-trivial technical decision goes here. Agents append; humans review.
@@ -111,4 +111,23 @@ Every non-trivial technical decision goes here. Agents append; humans review.
 - Consequences: Branches pushed to this repo with an open PR run CI twice
   (push + pull_request). Major-tag pins can move under us; follow-up:
   pin actions to commit SHAs and enable Dependabot for `github-actions`.
+- Review date: 2027-01-10
+
+
+### [DECISION-007] Normalize text files to LF, UTF-8 without BOM
+- Date: 2026-10-10
+- Status: proposed
+- Decided by: both (human requested; agent implemented)
+- Context: The seed docs were CRLF with a UTF-8 BOM; everything else is LF.
+  Agent edits flipped line endings and produced whole-file diffs (PR #1, #2).
+- Options considered: keep per-file endings; `* text=auto` (native endings
+  on checkout); `* text=auto eol=lf` (LF everywhere)
+- Decision: `.gitattributes` with `* text=auto eol=lf`, `.editorconfig` with
+  `end_of_line = lf` and `charset = utf-8`, existing files converted once,
+  BOMs removed. `tests/test_repo_hygiene.py` fails on CRLF or a BOM in any
+  tracked text file.
+- Consequences: Shell scripts and YAML behave the same on every OS; future
+  diffs show only content changes. Windows editors must honor
+  `.editorconfig` or Git converts on commit. The one-time conversion
+  touches every line of the seed docs.
 - Review date: 2027-01-10
