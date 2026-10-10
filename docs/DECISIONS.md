@@ -131,3 +131,50 @@ Every non-trivial technical decision goes here. Agents append; humans review.
   `.editorconfig` or Git converts on commit. The one-time conversion
   touches every line of the seed docs.
 - Review date: 2027-01-10
+
+
+### [DECISION-008] Pol.is integration: direct HTTP API, OIDC token, pinned server
+- Date: 2026-10-10
+- Status: proposed
+- Decided by: both (human chose direct API and an in-container sandbox;
+  agent chose the details)
+- Context: TASK-002. ARCHITECTURE.md named `colab-coop/polis-cli`, which
+  could not be found. The closest package, deliberAIde `polis-cli` 0.1.1
+  (Sep 2026), lists its Phase 1 commands as unfinished. Pol.is has no
+  official API docs, and its seed-statement behaviour changed several times
+  in 2025-2026.
+- Options considered: deliberAIde `polis-cli`; direct calls to `/api/v3`
+- Decision:
+  - Call `/api/v3` directly from `scripts/polis_setup.py`.
+  - Pin the server to `compdemocracy/polis@1db2f7919f33b740b34bb84ed9a1fb5bfb1914d2`
+    and verify endpoints against its source and a live sandbox
+    (`docs/POLIS_SANDBOX.md`). Pol.is is not a Python package, so the pin is
+    recorded as a comment in `requirements.txt` rather than a requirement
+    (refines DECISION-002).
+  - Authenticate with the owner's OIDC access token (`POLIS_TOKEN`). The
+    pinned server has no email/password login route, so none is supported.
+  - Create the conversation with `is_active: true`; Pol.is rejects seed
+    statements on a closed conversation, so "create closed, seed, then open"
+    is impossible.
+  - Validate seeds against server limits before the first request; never
+    retry POSTs.
+- Consequences: No third-party client to track. Moving the pin means
+  re-running the sandbox verification. A token from the dev simulator is
+  long-lived; a production token must come from the instance's provider.
+- Review date: 2027-01-10
+
+
+### [DECISION-009] requests + responses for HTTP and its tests
+- Date: 2026-10-10
+- Status: proposed
+- Decided by: agent
+- Context: `scripts/polis_setup.py` needs an HTTP client; the TASK-002 test
+  must assert the exact POST calls against a mocked Pol.is.
+- Options considered: requests + responses; httpx + respx; stdlib urllib +
+  unittest.mock
+- Decision: `requests` 2.34.2 and `responses` 0.26.3. Both are long
+  established; `responses` matches on JSON body and headers, so tests assert
+  payloads and the bearer header directly.
+- Consequences: Synchronous client only, which is enough for setup scripts.
+  Later scripts (TASK-003, TASK-005) should reuse the same pair.
+- Review date: 2027-01-10

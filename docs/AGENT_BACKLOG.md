@@ -41,7 +41,7 @@ Agents pick tasks labeled `agent-task` in GitHub Issues, or from here.
 
 
 ### [TASK-002] Pol.is sandbox connection
-- Status: todo
+- Status: done
 - Depends on: TASK-001
 - Acceptance criteria:
   - `scripts/polis_setup.py` authenticates to a Pol.is instance

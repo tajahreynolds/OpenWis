@@ -20,7 +20,11 @@
 
 ### Pol.is
 - Role: Deliberation and consensus-finding
-- Interface: HTTP API + `polis-cli`
+- Interface: HTTP API (`/api/v3`), owner authenticated with an OIDC bearer
+  token (DECISION-008). No official API docs; endpoints are verified against
+  the server source at the pinned commit.
+- Version: pinned to `compdemocracy/polis@1db2f7919f33b740b34bb84ed9a1fb5bfb1914d2`
+  (DECISION-002, DECISION-008)
 - Data out: Votes, clusters, comments, participant counts
 - License: AGPL-3.0
 
@@ -46,6 +50,24 @@
 
 
 ## Integration Points
+
+
+### Pol.is setup
+- Script: `scripts/polis_setup.py` (TASK-002)
+- Input: `data/synthetic/seeds.json` (`topic`, `description`, `statements`)
+- Config: `POLIS_BASE_URL`, `POLIS_TOKEN` (owner's OIDC access token)
+- Calls, in order:
+  1. `POST /api/v3/conversations` with `topic`, `description`,
+     `is_active: true`, `is_draft: false` → `{conversation_id, url}`.
+     The conversation is created open because Pol.is rejects statements on
+     a closed one (`403 polis_err_conversation_is_closed`).
+  2. `POST /api/v3/comments` with `conversation_id`, `txt`, `is_seed: true`,
+     once per statement → `{tid, currentPid}` (`tid` starts at 0).
+- Output: conversation ID on stdout; progress on stderr
+- Server limits checked before any request: topic 1000 chars, description
+  50000, statement 997; duplicate statements are rejected by Pol.is (409).
+- No retries: a retried POST could duplicate a conversation or statement.
+- Local sandbox: `docs/POLIS_SANDBOX.md`
 
 
 ### Pol.is → Dashboard
@@ -99,7 +121,7 @@ Hosting Requirements
 External References
 
 
-· Pol.is CLI: https://github.com/colab-coop/polis-cli
+· Pol.is: https://github.com/compdemocracy/polis
 · NarraFirma: https://github.com/participatorynarrative/narrafirma
 · Hypha: https://github.com/hypha-dao
 · Metagov Deliberation Interoperability: https://metagov.org
