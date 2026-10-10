@@ -1,4 +1,4 @@
-﻿# Human-Only Task Registry
+# Human-Only Task Registry
 
 
 This file is the canonical list of tasks that agents must never perform.
