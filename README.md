@@ -46,3 +46,4 @@ pytest --cov            # tests, fails under 80% coverage of scripts/
 - [docs/AGENT_BACKLOG.md](docs/AGENT_BACKLOG.md) — agent task backlog
 - [docs/HUMAN_TASKS.md](docs/HUMAN_TASKS.md) — human-only task registry
 - [docs/DECISIONS.md](docs/DECISIONS.md) — decision log
+- [docs/POLIS_SANDBOX.md](docs/POLIS_SANDBOX.md) — local Pol.is for testing the integration

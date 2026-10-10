@@ -1,0 +1,15 @@
+{
+  "notice": "Synthetic test data for the Pol.is sandbox. Testville is fictional. These statements were not written for, and must not be used with, a real community.",
+  "topic": "[SANDBOX] Testville library opening hours",
+  "description": "Synthetic conversation used to test the Open Wisdom Stack integration scripts. All statements are fictional.",
+  "statements": [
+    "The Testville library should open earlier on weekdays.",
+    "The Testville library should stay open later on Fridays.",
+    "Sunday opening matters more than late weekday opening.",
+    "Shorter hours are acceptable if the library adds more staff per shift.",
+    "Self-service hours without staff would be a good idea.",
+    "Opening hours should be the same every day so they are easy to remember.",
+    "The library should publish usage data before changing its hours.",
+    "School holidays should have different hours from term time."
+  ]
+}
