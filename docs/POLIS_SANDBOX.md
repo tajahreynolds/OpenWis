@@ -77,8 +77,33 @@ provider instead. Keep it in `.env` (git-ignored), never in the repo.
 
     export POLIS_BASE_URL=http://localhost:5000
     export POLIS_TOKEN=<access token>
-    python scripts/polis_setup.py            # prints the conversation ID
-    POLIS_LIVE_TESTS=1 pytest tests/test_polis_live.py
+    python -m scripts.polis_setup            # prints the conversation ID
+    python -m scripts.export_and_transform --conversation-id <id>
+    POLIS_LIVE_TESTS=1 POLIS_LIVE_EXPORT_CONVERSATION_ID=<id> \
+        pytest tests/test_polis_live.py
+
+The export test needs a conversation with votes whose math has run (next
+section).
+
+## Opinion groups (math worker)
+
+Clusters only appear after Pol.is's Python math worker has processed the
+votes. Option A's `make start` runs it. For option B it can run natively:
+
+1. Python 3.12 venv (`delphi/pyproject.toml` requires `>=3.12,<3.13`).
+2. The poller imports only part of Delphi's dependency list. Installing
+   `numpy pandas scipy scikit-learn sqlalchemy psycopg2-binary boto3 pyyaml`
+   at the versions in `delphi/requirements.lock` was enough; torch and the
+   other heavy packages were not needed.
+3. From `delphi/`, with `PYTHONPATH=.`:
+   `python scripts/math_poller.py --once`, with environment
+   `DATABASE_URL` (Postgres at `127.0.0.1:5432`), `DATABASE_SSL_MODE=disable`,
+   `MATH_ENV=dev` (the namespace the dev server reads) and
+   `MATH_POLLER_MEMORY_LIMIT_MB` (needed when there is no cgroup memory limit).
+
+`--once` processes conversations with new votes and exits. Pol.is needs
+enough voters with enough votes to form groups: in the fixture run, 22 of 30
+synthetic voters with 7 or more votes each were placed in 2 groups.
 
 ## Verified behaviour at the pinned commit (2026-10-10)
 
@@ -91,6 +116,10 @@ provider instead. Keep it in `.env` (git-ignored), never in the repo.
 | Same statement twice | 409 `polis_err_post_comment_duplicate` |
 | `POST /comments` on a closed conversation | 403 `polis_err_conversation_is_closed` |
 | `scripts/polis_setup.py` with `data/synthetic/seeds.json` | conversation active, 8 seed statements |
+| `POST /reports` | 200 `{}`; `GET /reports?conversation_id=` lists `report_id` |
+| `GET /reportExport/<rid>/<file>` | 200 for every file, before and after math |
+| `comment-groups.csv` before math | header only, no group columns |
+| `scripts/export_and_transform.py` | output matches the fixture values (`tests/fixtures/polis_export/`) |
 
 ## Upstream quirks at the pinned commit
 

@@ -7,7 +7,7 @@ Reads the Pol.is instance and owner token from the environment:
 
 Usage:
 
-    python scripts/polis_setup.py [--seeds data/synthetic/seeds.json]
+    python -m scripts.polis_setup [--seeds data/synthetic/seeds.json]
 
 The conversation ID is the only thing written to stdout, so it can be
 captured by later steps. Progress and errors go to stderr.
@@ -25,28 +25,24 @@ import json
 import logging
 import os
 import sys
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 import requests
+
+from scripts.polis_client import PolisClient, PolisError, config_from_env
 
 log = logging.getLogger("polis_setup")
 
 DEFAULT_SEEDS_PATH = (
     Path(__file__).resolve().parent.parent / "data" / "synthetic" / "seeds.json"
 )
-TIMEOUT_SECONDS = 30
-
 # Field limits enforced by the pinned Pol.is server (server/app.ts). Checked
 # before any request so bad seeds never leave a half-built conversation.
 MAX_TOPIC_CHARS = 1000
 MAX_DESCRIPTION_CHARS = 50000
 MAX_STATEMENT_CHARS = 997
-
-
-class PolisError(RuntimeError):
-    """A Pol.is API request failed or returned an unexpected response."""
 
 
 @dataclass(frozen=True)
@@ -119,121 +115,6 @@ def _required_text(data: dict, key: str, limit: int, path: Path) -> str:
     if len(value) > limit:
         raise ValueError(f"{path}: '{key}' is longer than {limit} characters")
     return value
-
-
-def config_from_env(environ: Mapping[str, str]) -> tuple[str, str]:
-    """Read the Pol.is connection settings.
-
-    Args:
-        environ: Environment mapping, usually ``os.environ``.
-
-    Returns:
-        A ``(base_url, token)`` tuple.
-
-    Raises:
-        ValueError: If ``POLIS_BASE_URL`` or ``POLIS_TOKEN`` is missing or blank.
-    """
-    missing = [
-        name
-        for name in ("POLIS_BASE_URL", "POLIS_TOKEN")
-        if not environ.get(name, "").strip()
-    ]
-    if missing:
-        raise ValueError(f"missing environment variable(s): {', '.join(missing)}")
-    return environ["POLIS_BASE_URL"].strip(), environ["POLIS_TOKEN"].strip()
-
-
-class PolisClient:
-    """Minimal client for the Pol.is ``/api/v3`` endpoints this toolkit uses.
-
-    Requests are not retried: a retried POST could create a duplicate
-    conversation or statement.
-    """
-
-    def __init__(
-        self, base_url: str, token: str, session: requests.Session | None = None
-    ) -> None:
-        """Create a client.
-
-        Args:
-            base_url: Base URL of the Pol.is instance.
-            token: OIDC access token of the conversation owner.
-            session: Optional ``requests.Session`` to use (for tests).
-        """
-        self._api = base_url.rstrip("/") + "/api/v3"
-        self._session = session or requests.Session()
-        self._session.headers["Authorization"] = f"Bearer {token}"
-
-    def create_conversation(self, topic: str, description: str) -> tuple[str, str]:
-        """Create a conversation that is open for voting.
-
-        Pol.is rejects statements on a closed conversation, so the
-        conversation is created active rather than opened after seeding.
-
-        Args:
-            topic: Conversation title.
-            description: Conversation description.
-
-        Returns:
-            A ``(conversation_id, url)`` tuple. ``url`` is the participant
-            link, or an empty string if the server did not return one.
-
-        Raises:
-            PolisError: If the request fails or returns no conversation ID.
-            requests.RequestException: On network errors.
-        """
-        data = self._post(
-            "/conversations",
-            {
-                "topic": topic,
-                "description": description,
-                "is_active": True,
-                "is_draft": False,
-            },
-        )
-        conversation_id = data.get("conversation_id")
-        if not conversation_id:
-            raise PolisError("POST /conversations returned no conversation_id")
-        return str(conversation_id), str(data.get("url") or "")
-
-    def add_seed_statement(self, conversation_id: str, text: str) -> int:
-        """Add one seed statement to a conversation.
-
-        Args:
-            conversation_id: Conversation to add the statement to.
-            text: Statement text.
-
-        Returns:
-            The statement ID (``tid``) assigned by Pol.is.
-
-        Raises:
-            PolisError: If the request fails or returns no statement ID.
-            requests.RequestException: On network errors.
-        """
-        data = self._post(
-            "/comments",
-            {"conversation_id": conversation_id, "txt": text, "is_seed": True},
-        )
-        if "tid" not in data:
-            raise PolisError("POST /comments returned no tid")
-        return int(data["tid"])
-
-    def _post(self, path: str, payload: dict) -> dict:
-        response = self._session.post(
-            self._api + path, json=payload, timeout=TIMEOUT_SECONDS
-        )
-        if not response.ok:
-            raise PolisError(
-                f"POST {path} returned {response.status_code}: "
-                f"{response.text[:500].strip()}"
-            )
-        try:
-            data = response.json()
-        except ValueError as exc:
-            raise PolisError(f"POST {path} returned a non-JSON body") from exc
-        if not isinstance(data, dict):
-            raise PolisError(f"POST {path} returned unexpected JSON")
-        return data
 
 
 def setup_conversation(client: PolisClient, seeds: Seeds) -> str:

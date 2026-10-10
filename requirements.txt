@@ -11,6 +11,9 @@ ruff==0.17.0
 requests==2.34.2
 responses==0.26.3
 
+# Validates output against schemas/assembly.schema.json (DECISION-011)
+jsonschema==4.26.0
+
 # Pol.is server is not a Python package. It is pinned per DECISION-002 to
 # compdemocracy/polis@1db2f7919f33b740b34bb84ed9a1fb5bfb1914d2 (DECISION-008);
 # see docs/POLIS_SANDBOX.md.

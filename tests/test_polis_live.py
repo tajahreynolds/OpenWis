@@ -10,7 +10,8 @@ import os
 import pytest
 import requests
 
-from scripts import polis_setup
+from scripts import export_and_transform, polis_setup
+from scripts.polis_client import PolisClient, config_from_env
 
 pytestmark = [
     pytest.mark.live,
@@ -22,11 +23,11 @@ pytestmark = [
 
 
 def test_setup_conversation_against_live_polis():
-    base_url, token = polis_setup.config_from_env(os.environ)
+    base_url, token = config_from_env(os.environ)
     seeds = polis_setup.load_seeds(polis_setup.DEFAULT_SEEDS_PATH)
 
     conversation_id = polis_setup.setup_conversation(
-        polis_setup.PolisClient(base_url, token), seeds
+        PolisClient(base_url, token), seeds
     )
 
     api = base_url.rstrip("/") + "/api/v3"
@@ -47,3 +48,23 @@ def test_setup_conversation_against_live_polis():
     by_text = {c["txt"]: c for c in comments.json()}
     assert set(by_text) == set(seeds.statements)
     assert all(c["is_seed"] for c in by_text.values())
+
+
+def test_export_and_transform_against_live_polis(tmp_path):
+    conversation_id = os.environ.get("POLIS_LIVE_EXPORT_CONVERSATION_ID")
+    if not conversation_id:
+        pytest.skip(
+            "set POLIS_LIVE_EXPORT_CONVERSATION_ID to a conversation whose "
+            "Pol.is math has run"
+        )
+    base_url, token = config_from_env(os.environ)
+
+    export_and_transform.pull_export(
+        PolisClient(base_url, token), conversation_id, tmp_path
+    )
+    document = export_and_transform.build_document(tmp_path, conversation_id)
+
+    assert document["participants"] > 0
+    assert document["votes"] >= document["participants"]
+    assert document["clusters"], "expected opinion groups once math has run"
+    assert sum(c["size"] for c in document["clusters"]) <= document["participants"]

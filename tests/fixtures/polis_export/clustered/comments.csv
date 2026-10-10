@@ -1,0 +1,9 @@
+timestamp,datetime,comment-id,author-id,agrees,disagrees,moderated,comment-body
+1791672705,Sat Oct 10 2026 22:51:45 GMT+0000 (Coordinated Universal Time),0,0,15,11,1,"The Testville library should open earlier on weekdays."
+1791672705,Sat Oct 10 2026 22:51:45 GMT+0000 (Coordinated Universal Time),1,0,9,14,1,"The Testville library should stay open later on Fridays."
+1791672705,Sat Oct 10 2026 22:51:45 GMT+0000 (Coordinated Universal Time),2,0,12,13,1,"Sunday opening matters more than late weekday opening."
+1791672705,Sat Oct 10 2026 22:51:45 GMT+0000 (Coordinated Universal Time),3,0,14,10,1,"Shorter hours are acceptable if the library adds more staff per shift."
+1791672705,Sat Oct 10 2026 22:51:45 GMT+0000 (Coordinated Universal Time),4,0,14,10,1,"Self-service hours without staff would be a good idea."
+1791672705,Sat Oct 10 2026 22:51:45 GMT+0000 (Coordinated Universal Time),5,0,8,13,1,"Opening hours should be the same every day so they are easy to remember."
+1791672705,Sat Oct 10 2026 22:51:45 GMT+0000 (Coordinated Universal Time),6,0,23,0,1,"The library should publish usage data before changing its hours."
+1791672705,Sat Oct 10 2026 22:51:45 GMT+0000 (Coordinated Universal Time),7,0,6,15,1,"School holidays should have different hours from term time."

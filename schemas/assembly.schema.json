@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/tajahreynolds/OpenWis/schemas/assembly.schema.json",
+  "title": "Assembly metrics (canonical)",
+  "description": "Canonical per-assembly metrics; see docs/ARCHITECTURE.md (Data Schema). Aggregates only: no statement text from participants, no participant IDs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "assembly_id",
+    "participants",
+    "statements",
+    "votes",
+    "clusters",
+    "stories_collected",
+    "decisions"
+  ],
+  "properties": {
+    "assembly_id": {
+      "description": "Identifier of the assembly; also the output file name.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$"
+    },
+    "participants": {
+      "description": "Distinct participants who voted on at least one counted statement.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "statements": {
+      "description": "Statements not rejected by moderation.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "votes": {
+      "description": "Current votes (agree, disagree or pass) on counted statements; a changed vote counts once.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "clusters": {
+      "description": "Opinion groups found by Pol.is; empty until its math has run.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "size", "consensus"],
+        "properties": {
+          "id": {"type": "integer", "minimum": 0},
+          "size": {
+            "description": "Participants Pol.is placed in this group.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "consensus": {
+            "description": "Within-group agreement, 0 (evenly split) to 1 (unanimous): sum over statements of |agrees - disagrees| / sum of (agrees + disagrees), for this group's votes. Null when the group cast no agree or disagree votes. See DECISION-010.",
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "stories_collected": {
+      "description": "Stories collected in NarraFirma. 0 until that integration exists.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "decisions": {
+      "description": "Decision records from Hypha. Empty until that integration exists.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "votes_for", "votes_against"],
+        "properties": {
+          "id": {"type": "string"},
+          "text": {"type": "string"},
+          "votes_for": {"type": "integer", "minimum": 0},
+          "votes_against": {"type": "integer", "minimum": 0}
+        }
+      }
+    }
+  }
+}
