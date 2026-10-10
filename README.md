@@ -1,5 +1,7 @@
 # Open Wisdom Stack
 
+[![CI](https://github.com/tajahreynolds/OpenWis/actions/workflows/ci.yml/badge.svg)](https://github.com/tajahreynolds/OpenWis/actions/workflows/ci.yml)
+
 An integration toolkit that lets small communities run deliberative assemblies
 using existing open-source tools: Pol.is (deliberation), NarraFirma (narrative
 inquiry), Hypha (governance), and a metrics dashboard, connected by lightweight
@@ -16,6 +18,14 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 pytest
+```
+
+Checks run by CI (`.github/workflows/ci.yml`):
+
+```
+ruff check .            # lint
+ruff format --check .   # formatting
+pytest --cov            # tests, fails under 80% coverage of scripts/
 ```
 
 ## Layout

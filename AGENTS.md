@@ -1,4 +1,4 @@
-﻿# AGENTS.md — Open Wisdom Stack
+# AGENTS.md — Open Wisdom Stack
 
 
 This file is the primary instruction set for AI agents working on this repository.

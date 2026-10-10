@@ -1,0 +1,3 @@
+# Store text files with LF in the repo and check them out with LF on every
+# platform (DECISION-007). Git detects binary files automatically.
+* text=auto eol=lf
