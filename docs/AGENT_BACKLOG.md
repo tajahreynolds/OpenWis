@@ -28,7 +28,7 @@ Agents pick tasks labeled `agent-task` in GitHub Issues, or from here.
 
 
 ### [TASK-001] Repo scaffolding
-- Status: todo
+- Status: done
 - Depends on: none
 - Acceptance criteria:
   - Directory structure: `scripts/`, `tests/`, `docs/`, `data/synthetic/`

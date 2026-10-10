@@ -1,0 +1,41 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Packaging / build
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Tooling caches
+.mypy_cache/
+.ruff_cache/
+
+# Environment / secrets (Pol.is credentials, Google service account keys)
+.env
+.env.*
+*.pem
+service-account*.json
+
+# Data: only synthetic data is committed. Never commit real participant data.
+data/*
+!data/synthetic/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
