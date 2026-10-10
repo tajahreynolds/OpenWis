@@ -97,7 +97,7 @@ Agents pick tasks labeled `agent-task` in GitHub Issues, or from here.
 
 
 ### [TASK-007] CI/CD pipeline
-- Status: in-progress
+- Status: done
 - Depends on: TASK-001
 - Acceptance criteria:
   - GitHub Actions workflow: lint, test, coverage report
