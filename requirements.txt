@@ -4,5 +4,8 @@
 pytest==9.1.1
 pytest-cov==7.1.0
 
+# Lint and format (DECISION-005)
+ruff==0.17.0
+
 # Pol.is client: to be pinned to a commit hash per DECISION-002 when the
 # integration is implemented (TASK-002).

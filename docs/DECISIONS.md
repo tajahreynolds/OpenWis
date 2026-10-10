@@ -58,7 +58,7 @@ Every non-trivial technical decision goes here. Agents append; humans review.
 
 ### [DECISION-004] Treat an empty test suite as passing during scaffolding
 - Date: 2026-10-10
-- Status: proposed
+- Status: superseded (TASK-007 added tests; hook removed)
 - Decided by: agent
 - Context: TASK-001's test is "`pytest` runs with zero tests, exits 0", but
   pytest exits 5 when no tests are collected.
@@ -69,3 +69,46 @@ Every non-trivial technical decision goes here. Agents append; humans review.
 - Consequences: An accidentally empty suite would also pass, so the hook
   must be removed once TASK-002 adds the first tests.
 - Review date: when TASK-002 merges
+
+
+### [DECISION-005] Ruff for linting and formatting
+- Date: 2026-10-10
+- Status: proposed
+- Decided by: agent
+- Context: TASK-007 requires a lint step in CI.
+- Options considered: Ruff; flake8 + black + isort + pydocstyle
+- Decision: Ruff 0.17.0 (one pinned tool, config in `pyproject.toml`).
+  Rules: pycodestyle, pyflakes, isort, bugbear, pyupgrade, and pydocstyle
+  with Google convention so the AGENTS.md docstring rule is enforced
+  (args/returns/raises). Docstring rules are off for `tests/`.
+- Consequences: Lint and format run in seconds; CI uses `ruff check` and
+  `ruff format --check`. Version bumps are manual.
+- Review date: 2027-01-10
+
+
+### [DECISION-006] CI design (GitHub Actions)
+- Date: 2026-10-10
+- Status: proposed
+- Decided by: agent
+- Context: TASK-007 — lint, test, coverage report, fail under 80%, cache deps.
+- Options considered: GitHub Actions; Forgejo Actions (not needed while the
+  repo is on GitHub)
+- Decision:
+  - Workflow `.github/workflows/ci.yml` on every push and pull request,
+    read-only token, superseded runs cancelled except on `main`.
+  - Tests on Python 3.11 (minimum supported) and 3.13 (latest).
+  - Coverage threshold lives in `pyproject.toml` (`fail_under = 80`,
+    source `scripts/`) so local and CI runs enforce the same gate; a test
+    asserts the threshold is not lowered.
+  - While `scripts/` has no Python files the gate is skipped with a visible
+    notice, because coverage of nothing reports 0%. It applies
+    automatically once TASK-002 adds code.
+  - Dependency caching via `actions/setup-python` pip cache keyed on
+    `requirements.txt`.
+  - Coverage table written to the job summary; `coverage.xml` uploaded as
+    an artifact.
+  - Third-party actions pinned to major tags (`@v5`, `@v6`, `@v4`).
+- Consequences: Branches pushed to this repo with an open PR run CI twice
+  (push + pull_request). Major-tag pins can move under us; follow-up:
+  pin actions to commit SHAs and enable Dependabot for `github-actions`.
+- Review date: 2027-01-10
