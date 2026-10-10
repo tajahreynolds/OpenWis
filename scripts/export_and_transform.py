@@ -140,22 +140,20 @@ def validate_assembly_id(assembly_id: str) -> str:
     return assembly_id
 
 
-def read_export(directory: Path) -> dict[str, Table]:
-    """Read and check the Pol.is export files in a directory.
+def check_export_format(directory: Path, files: Sequence[str]) -> None:
+    """Check that export files exist and declare the supported format.
 
     Args:
-        directory: Directory holding the files named in ``EXPORT_FILES``.
-
-    Returns:
-        Parsed CSV files keyed by file name.
+        directory: Directory holding the export files.
+        files: File names that must be present, including ``format.json``.
 
     Raises:
-        ExportFormatError: If a file is missing, ``format.json`` does not
-            declare ``polis-export/1``, or a required column is absent.
-        OSError: If a file cannot be read.
+        ExportFormatError: If a file is missing or ``format.json`` does not
+            declare ``polis-export/1``.
+        OSError: If ``format.json`` cannot be read.
     """
     directory = Path(directory)
-    missing = [name for name in EXPORT_FILES if not (directory / name).is_file()]
+    missing = [name for name in files if not (directory / name).is_file()]
     if missing:
         raise ExportFormatError(
             f"{directory}: missing export file(s): {', '.join(missing)}"
@@ -172,18 +170,50 @@ def read_export(directory: Path) -> dict[str, Table]:
             f"only {EXPORT_FORMAT!r} is supported"
         )
 
-    tables = {}
-    for name, required in REQUIRED_COLUMNS.items():
-        with (directory / name).open(encoding="utf-8", newline="") as handle:
-            reader = csv.DictReader(handle)
-            columns = tuple(reader.fieldnames or ())
-            absent = [column for column in required if column not in columns]
-            if absent:
-                raise ExportFormatError(
-                    f"{name}: missing column(s): {', '.join(absent)}"
-                )
-            tables[name] = Table(name, columns, tuple(reader))
-    return tables
+
+def read_table(directory: Path, name: str, required: Sequence[str]) -> Table:
+    """Read one CSV export file and check its header.
+
+    Args:
+        directory: Directory holding the file.
+        name: File name.
+        required: Columns that must be in the header.
+
+    Returns:
+        The parsed file.
+
+    Raises:
+        ExportFormatError: If a required column is absent.
+        OSError: If the file cannot be read.
+    """
+    with (Path(directory) / name).open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        columns = tuple(reader.fieldnames or ())
+        absent = [column for column in required if column not in columns]
+        if absent:
+            raise ExportFormatError(f"{name}: missing column(s): {', '.join(absent)}")
+        return Table(name, columns, tuple(reader))
+
+
+def read_export(directory: Path) -> dict[str, Table]:
+    """Read and check the Pol.is export files this script uses.
+
+    Args:
+        directory: Directory holding the files named in ``EXPORT_FILES``.
+
+    Returns:
+        Parsed CSV files keyed by file name.
+
+    Raises:
+        ExportFormatError: If a file is missing, ``format.json`` does not
+            declare ``polis-export/1``, or a required column is absent.
+        OSError: If a file cannot be read.
+    """
+    check_export_format(directory, EXPORT_FILES)
+    return {
+        name: read_table(directory, name, required)
+        for name, required in REQUIRED_COLUMNS.items()
+    }
 
 
 def transform(tables: dict[str, Table], assembly_id: str) -> dict:
@@ -324,13 +354,19 @@ def build_document(directory: Path, assembly_id: str) -> dict:
     return document
 
 
-def pull_export(client: PolisClient, conversation_id: str, directory: Path) -> str:
+def pull_export(
+    client: PolisClient,
+    conversation_id: str,
+    directory: Path,
+    files: Sequence[str] = EXPORT_FILES,
+) -> str:
     """Download a conversation's export files into a directory.
 
     Args:
         client: Client authenticated as the conversation owner.
         conversation_id: Conversation to export.
         directory: Existing directory to write the files to.
+        files: Export file names to download (default: this script's files).
 
     Returns:
         The report ID the files were exported from.
@@ -341,7 +377,7 @@ def pull_export(client: PolisClient, conversation_id: str, directory: Path) -> s
         OSError: If a file cannot be written.
     """
     report_id = client.get_report_id(conversation_id)
-    for name in EXPORT_FILES:
+    for name in files:
         (Path(directory) / name).write_bytes(
             client.download_export_file(report_id, name)
         )

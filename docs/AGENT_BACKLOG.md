@@ -64,7 +64,7 @@ Agents pick tasks labeled `agent-task` in GitHub Issues, or from here.
 
 
 ### [TASK-004] NarraFirma import format
-- Status: todo
+- Status: done
 - Depends on: TASK-003
 - Acceptance criteria:
   - `scripts/storybridge.py` reads Pol.is comments

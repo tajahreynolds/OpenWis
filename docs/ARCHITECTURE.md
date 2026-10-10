@@ -31,9 +31,11 @@
 
 ### NarraFirma
 - Role: Participatory narrative inquiry
-- Interface: WordPress plugin or Node.js app
+- Interface: WordPress plugin or Node.js app; data in through CSV import
+  (a story form CSV describing the columns, then a stories CSV)
+- Version verified: 1.6.14 (`pdfernhout/narrafirma@2b3a4aa`)
 - Data in: Stories, survey responses, annotations
-- License: Open source
+- License: GPL-2.0-or-later
 
 
 ### Hypha
@@ -94,9 +96,25 @@
 
 
 ### Pol.is → NarraFirma
-- Endpoint: Pol.is comments export
-- Transform: `scripts/storybridge.py`
-- Output: NarraFirma-compatible import format
+- Script: `scripts/storybridge.py` (TASK-004), run as
+  `python -m scripts.storybridge`
+- Input: `format.json`, `summary.csv` (topic) and `comments.csv` from the
+  Pol.is export (`polis-export/1`), pulled with `--conversation-id` like
+  `export_and_transform`, or read from `--input-dir`
+- Output, in `data/output/`:
+  - `{assembly_id}-story-form.csv`: NarraFirma story form CSV (header
+    `Data column name, Type, About, Short name, Long name, Options, Answers`)
+    declaring the five columns below
+  - `{assembly_id}-stories.csv`: one row per statement; columns
+    `Participant ID` (Pol.is author ID), `Eliciting question` (`polis`, the
+    topic as question text), `Story title` (`Statement <id>`), `Story text`,
+    `Collection date` (ISO date, UTC). These are NarraFirma's default column
+    names.
+- Rows: statements rejected by moderation, blank statements and malformed
+  rows are skipped and counted; text is normalised to `\n` line endings with
+  control characters removed; ordered by statement ID.
+- Contains participant-written text: stays in git-ignored `data/output/`.
+- Import steps and verification: `docs/NARRAFIRMA_IMPORT.md`
 
 
 ### Hypha → Dashboard
@@ -157,6 +175,6 @@ External References
 
 
 · Pol.is: https://github.com/compdemocracy/polis
-· NarraFirma: https://github.com/participatorynarrative/narrafirma
+· NarraFirma: https://github.com/pdfernhout/narrafirma
 · Hypha: https://github.com/hypha-dao
 · Metagov Deliberation Interoperability: https://metagov.org

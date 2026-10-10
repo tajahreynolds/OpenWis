@@ -1,0 +1,9 @@
+topic,"[SANDBOX] Testville library opening hours"
+url,undefined://localhost:5000/2rmknavhzs
+voters,30
+voters-in-conv,22
+commenters,1
+comments,8
+groups,2
+conversation-description,"Synthetic conversation used to test the Open Wisdom Stack integration scripts. All statements are fictional."
+vote-convention,agree=+1;disagree=-1;pass=0;format=polis-export/1

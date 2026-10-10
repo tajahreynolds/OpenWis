@@ -249,3 +249,39 @@ Every non-trivial technical decision goes here. Agents append; humans review.
 - Consequences: `python scripts/polis_setup.py` (documented in TASK-002) no
   longer works; docs now show `python -m scripts.polis_setup`.
 - Review date: 2027-01-10
+
+
+### [DECISION-013] Pol.is statements to NarraFirma: two CSV files, default columns
+- Date: 2026-10-10
+- Status: proposed (needs human review: whether Pol.is statements should be
+  treated as stories is a methodological choice, not a technical one)
+- Decided by: agent
+- Context: TASK-004. NarraFirma (1.6.14) imports stories from a CSV whose
+  columns are described by a story form, entered by hand or imported as a
+  "story form CSV". ARCHITECTURE.md linked a NarraFirma repository that does
+  not exist; the source is `pdfernhout/narrafirma`.
+- Options considered: stories CSV only (user describes columns by hand);
+  stories CSV plus story form CSV; NarraFirma project export (JSON, tied to
+  internal IDs)
+- Decision:
+  - Write both a story form CSV and a stories CSV.
+  - One story per Pol.is statement not rejected by moderation. Columns use
+    NarraFirma's default names (`Participant ID`, `Eliciting question`,
+    `Story title`, `Story text`, `Collection date`), so the stories file
+    still imports if the form file is not used.
+  - Participant ID is the Pol.is author ID; the eliciting question is the
+    conversation topic; titles are `Statement <id>` (no summarising of
+    participant text); dates are UTC ISO dates.
+  - No vote data: Pol.is `comments.csv` agree/disagree counts double-count
+    changed votes (DECISION-010).
+  - Blank, rejected and malformed rows are skipped and counted rather than
+    failing the run; a missing file or column, or another export format,
+    still fails.
+  - Text is kept as written apart from line endings and control
+    characters. Formula-like text (`=...`) is not escaped, because
+    NarraFirma would store the escape character as part of the story.
+- Consequences: Verified by importing into a running NarraFirma 1.6.14
+  (docs/NARRAFIRMA_IMPORT.md). The stories file holds participant text and
+  must stay out of the repo. Opening it in a spreadsheet program could
+  evaluate formula-like cells; it is meant for NarraFirma.
+- Review date: 2027-01-10
