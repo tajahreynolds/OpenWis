@@ -53,7 +53,7 @@ Agents pick tasks labeled `agent-task` in GitHub Issues, or from here.
 
 
 ### [TASK-003] Pol.is export and transform
-- Status: todo
+- Status: done
 - Depends on: TASK-002
 - Acceptance criteria:
   - `scripts/export_and_transform.py` pulls votes, clusters, comments

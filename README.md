@@ -32,10 +32,15 @@ pytest --cov            # tests, fails under 80% coverage of scripts/
 
 | Path | Contents |
 |------|----------|
-| `scripts/` | Integration scripts |
-| `tests/` | Unit and integration tests |
+| `scripts/` | Integration scripts, run as `python -m scripts.<name>` |
+| `schemas/` | JSON Schema for the canonical assembly output |
+| `tests/` | Unit and integration tests; `tests/fixtures/` holds Pol.is exports of synthetic conversations |
 | `docs/` | Project documentation |
-| `data/synthetic/` | Synthetic test data (the only data committed to this repo) |
+| `data/synthetic/` | Synthetic input data |
+| `data/output/` | Generated output (git-ignored) |
+
+Only synthetic data is committed. Real participant data never goes in this
+repo.
 
 ## Documentation
 

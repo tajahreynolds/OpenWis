@@ -1,0 +1,9 @@
+comment-id,comment,total-votes,total-agrees,total-disagrees,total-passes,group-a-votes,group-a-agrees,group-a-disagrees,group-a-passes,group-b-votes,group-b-agrees,group-b-disagrees,group-b-passes
+0,"The Testville library should open earlier on weekdays.",19,9,9,1,10,9,1,0,9,0,8,1
+1,"The Testville library should stay open later on Fridays.",19,8,11,0,10,8,2,0,9,0,9,0
+2,"Sunday opening matters more than late weekday opening.",21,10,10,1,11,0,10,1,10,10,0,0
+3,"Shorter hours are acceptable if the library adds more staff per shift.",21,10,6,5,12,8,2,2,9,2,4,3
+4,"Self-service hours without staff would be a good idea.",21,12,8,1,11,10,0,1,10,2,8,0
+5,"Opening hours should be the same every day so they are easy to remember.",19,8,9,2,11,1,9,1,8,7,0,1
+6,"The library should publish usage data before changing its hours.",20,20,0,0,10,10,0,0,10,10,0,0
+7,"School holidays should have different hours from term time.",21,6,9,6,11,3,4,4,10,3,5,2

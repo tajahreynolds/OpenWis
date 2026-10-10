@@ -178,3 +178,74 @@ Every non-trivial technical decision goes here. Agents append; humans review.
 - Consequences: Synchronous client only, which is enough for setup scripts.
   Later scripts (TASK-003, TASK-005) should reuse the same pair.
 - Review date: 2027-01-10
+
+
+### [DECISION-010] Canonical metric definitions from the Pol.is export
+- Date: 2026-10-10
+- Status: proposed (needs human review: `consensus` will be shown on the
+  dashboard)
+- Decided by: agent
+- Context: TASK-003. ARCHITECTURE.md listed the canonical fields but not how
+  to compute them, and Pol.is has no per-group "consensus" value. The pinned
+  export also has quirks: `votes.csv` lists vote events (a changed vote
+  appears twice), `participant-votes.csv` can show a changed vote's old
+  value, and `comments.csv` counts both.
+- Options considered for `consensus`: mean within-group agree rate;
+  share of votes with the group majority (range 0.5-1); vote-weighted
+  |agrees - disagrees| / (agrees + disagrees) (range 0-1); Pol.is's
+  group-aware consensus (a per-statement, cross-group value that does not
+  fit a per-group field)
+- Decision:
+  - `statements`: comments not rejected by moderation (`moderated` != -1).
+  - `votes`: distinct (voter, statement) pairs in `votes.csv` on those
+    statements, passes included.
+  - `participants`: distinct voters among those votes.
+  - `clusters`: Pol.is groups from `participant-votes.csv` (`group-id`),
+    matched to `comment-groups.csv` columns by letter (`group-a` is 0).
+  - `consensus`: per group, sum over counted statements of
+    |agrees - disagrees| divided by sum of (agrees + disagrees); 1 means
+    the group voted unanimously on every statement, 0 means evenly split.
+    Passes are excluded. Rounded to 4 places; `null` when the group cast no
+    agree or disagree votes.
+  - `stories_collected` 0 and `decisions` `[]` until those integrations
+    exist.
+  - The output holds counts only: no participant IDs or statement text.
+- Consequences: Values are reproducible from the export alone. `consensus`
+  measures how united a group is, not agreement between groups; a
+  cross-group measure would need a new schema field. Group sizes can sum to
+  fewer than `participants` because Pol.is leaves low-activity voters
+  unclustered.
+- Review date: 2027-01-10
+
+
+### [DECISION-011] JSON Schema for the canonical output; jsonschema library
+- Date: 2026-10-10
+- Status: proposed
+- Decided by: agent
+- Context: TASK-003's test must show the output "matches schema", and
+  TASK-005/006 will consume the same document.
+- Options considered: hand-written checks in tests; JSON Schema file +
+  `jsonschema`; pydantic models
+- Decision: `schemas/assembly.schema.json` (JSON Schema 2020-12) is the
+  source of truth, with `additionalProperties: false`. The script validates
+  every document before writing it, and the tests validate fixtures against
+  it. Library: `jsonschema` 4.26.0.
+- Consequences: Any consumer, in any language, can validate the document.
+  Schema changes are explicit diffs to one file.
+- Review date: 2027-01-10
+
+
+### [DECISION-012] Scripts are a package, run with `python -m`
+- Date: 2026-10-10
+- Status: proposed
+- Decided by: agent
+- Context: `export_and_transform` reuses the Pol.is client written for
+  `polis_setup`. Sharing code between files run as `python scripts/x.py`
+  requires path hacks.
+- Options considered: duplicate the client; `sys.path` manipulation;
+  `scripts/` as a package with absolute imports, run as modules
+- Decision: `scripts/__init__.py`; shared client in `scripts/polis_client.py`;
+  scripts run from the repository root as `python -m scripts.<name>`.
+- Consequences: `python scripts/polis_setup.py` (documented in TASK-002) no
+  longer works; docs now show `python -m scripts.polis_setup`.
+- Review date: 2027-01-10

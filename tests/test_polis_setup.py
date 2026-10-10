@@ -12,7 +12,8 @@ import responses
 from responses import matchers
 
 from scripts import polis_setup
-from scripts.polis_setup import PolisClient, PolisError, Seeds
+from scripts.polis_client import PolisClient, PolisError
+from scripts.polis_setup import Seeds
 
 BASE = "http://polis.test"
 API = f"{BASE}/api/v3"
@@ -126,89 +127,6 @@ def test_load_seeds_rejects_bad_json(tmp_path):
     path.write_text("{not json", encoding="utf-8")
     with pytest.raises(ValueError, match="not valid JSON"):
         polis_setup.load_seeds(path)
-
-
-# config_from_env
-
-
-def test_config_from_env_reads_and_strips():
-    env = {"POLIS_BASE_URL": " http://x ", "POLIS_TOKEN": " t "}
-    assert polis_setup.config_from_env(env) == ("http://x", "t")
-
-
-@pytest.mark.parametrize(
-    ("env", "missing"),
-    [
-        ({}, "POLIS_BASE_URL, POLIS_TOKEN"),
-        ({"POLIS_BASE_URL": "http://x"}, "POLIS_TOKEN"),
-        ({"POLIS_BASE_URL": "http://x", "POLIS_TOKEN": "  "}, "POLIS_TOKEN"),
-    ],
-)
-def test_config_from_env_reports_missing(env, missing):
-    with pytest.raises(
-        ValueError, match=f"missing environment variable\\(s\\): {missing}"
-    ):
-        polis_setup.config_from_env(env)
-
-
-# PolisClient
-
-
-@responses.activate
-def test_create_conversation_posts_open_conversation():
-    mock_create(responses)
-    client = PolisClient(BASE + "/", TOKEN)  # trailing slash is tolerated
-    assert client.create_conversation(SEEDS.topic, SEEDS.description) == (
-        "abc123",
-        f"{BASE}/abc123",
-    )
-
-
-@responses.activate
-def test_create_conversation_requires_conversation_id():
-    responses.post(f"{API}/conversations", json={"url": "x"})
-    with pytest.raises(PolisError, match="returned no conversation_id"):
-        PolisClient(BASE, TOKEN).create_conversation("t", "d")
-
-
-@responses.activate
-def test_add_seed_statement_returns_tid_including_zero():
-    mock_seed(responses, "First statement.", tid=0)
-    assert (
-        PolisClient(BASE, TOKEN).add_seed_statement("abc123", "First statement.") == 0
-    )
-
-
-@responses.activate
-def test_add_seed_statement_requires_tid():
-    responses.post(f"{API}/comments", json={"currentPid": 0})
-    with pytest.raises(PolisError, match="returned no tid"):
-        PolisClient(BASE, TOKEN).add_seed_statement("abc123", "x")
-
-
-@responses.activate
-def test_http_error_includes_status_and_polis_error_code():
-    responses.post(
-        f"{API}/comments",
-        json={"error": "polis_err_post_comment_duplicate", "status": 409},
-        status=409,
-    )
-    with pytest.raises(PolisError, match="409.*polis_err_post_comment_duplicate"):
-        PolisClient(BASE, TOKEN).add_seed_statement("abc123", "x")
-
-
-@responses.activate
-def test_non_json_body_is_an_error():
-    responses.post(f"{API}/conversations", body="<html>proxy page</html>")
-    with pytest.raises(PolisError, match="non-JSON body"):
-        PolisClient(BASE, TOKEN).create_conversation("t", "d")
-
-
-@responses.activate
-def test_json_that_is_not_an_object_is_an_error():
-    responses.post(f"{API}/conversations", json=["unexpected"])
-    with pytest.raises(PolisError, match="unexpected JSON"):
-        PolisClient(BASE, TOKEN).create_conversation("t", "d")
 
 
 # setup_conversation

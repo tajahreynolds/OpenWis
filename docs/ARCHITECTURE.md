@@ -53,7 +53,8 @@
 
 
 ### Pol.is setup
-- Script: `scripts/polis_setup.py` (TASK-002)
+- Script: `scripts/polis_setup.py` (TASK-002), run as
+  `python -m scripts.polis_setup`
 - Input: `data/synthetic/seeds.json` (`topic`, `description`, `statements`)
 - Config: `POLIS_BASE_URL`, `POLIS_TOKEN` (owner's OIDC access token)
 - Calls, in order:
@@ -71,9 +72,25 @@
 
 
 ### Pol.is → Dashboard
-- Endpoint: Pol.is export CSV
-- Transform: `scripts/export_and_transform.py`
-- Output: JSON with cluster summaries and participation counts
+- Script: `scripts/export_and_transform.py` (TASK-003), run as
+  `python -m scripts.export_and_transform`
+- Input, either:
+  - `--conversation-id`: `GET /api/v3/reports?conversation_id=…` (creating
+    a report with `POST /api/v3/reports` if none exists), then
+    `GET /api/v3/reportExport/<report_id>/<file>` for each file below, into
+    a temporary directory deleted on exit; or
+  - `--input-dir`: the same files downloaded from the Pol.is report page.
+- Files (Pol.is export format `polis-export/1`; any other format is
+  refused): `format.json`, `comments.csv`, `votes.csv`,
+  `participant-votes.csv`, `comment-groups.csv`
+- Output: `data/output/{assembly_id}.json` (git-ignored), validated against
+  `schemas/assembly.schema.json`; path printed on stdout
+- Clusters exist only after Pol.is math has run; before that `clusters` is
+  `[]` and a warning is logged.
+- Export quirks at the pinned server: `votes.csv` lists vote events (a
+  changed vote appears twice); `participant-votes.csv` can show a changed
+  vote's old value and `comments.csv` counts both. Vote totals therefore come
+  only from `votes.csv`, deduplicated.
 
 
 ### Pol.is → NarraFirma
@@ -89,6 +106,24 @@
 
 
 ## Data Schema (Canonical)
+
+
+Source of truth: `schemas/assembly.schema.json` (JSON Schema 2020-12).
+Field definitions (DECISION-010):
+
+- `participants`: distinct participants who voted on a counted statement
+- `statements`: statements not rejected by moderation
+- `votes`: current votes (agree, disagree, pass) on counted statements; a
+  changed vote counts once
+- `clusters[].size`: participants Pol.is placed in the group (participants
+  with too few votes are not placed, so sizes can sum to less than
+  `participants`)
+- `clusters[].consensus`: within-group agreement from 0 (evenly split) to 1
+  (unanimous): over counted statements, sum of |agrees - disagrees| divided
+  by sum of (agrees + disagrees), for that group's votes; `null` if the group
+  cast no agree or disagree votes
+- `stories_collected`, `decisions`: filled by the NarraFirma and Hypha
+  integrations; 0 and `[]` from the Pol.is export
 
 
 ```json
